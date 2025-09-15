@@ -1,0 +1,67 @@
+#if UNITY_EDITOR
+using Sirenix.OdinInspector.Editor;
+using UnityEditor;
+using UnityEngine;
+
+namespace OSK
+{
+    [CustomEditor(typeof(Main))]
+    public class MainEditor : OdinEditor
+    {
+        private Main main;
+
+        public override void OnInspectorGUI()
+        {
+            main = (Main)target;
+            base.OnInspectorGUI();
+            if (GUILayout.Button("CreateConfig"))
+            {
+                CreateConfig();
+            }
+
+			if (GUILayout.Button("Open Link Github"))
+            {
+                Application.OpenURL("https://github.com/O-S-K/OSK-Framework");
+            }
+        }
+
+
+        public void CreateConfig()
+        {
+            ListSoundSO listSoundSo = ScriptableObject.CreateInstance<ListSoundSO>();
+
+
+            string path = "Assets/OSK/Resources/Configs";
+            string resourcesPath = "Assets/OSK/Resources";
+
+            if (!AssetDatabase.IsValidFolder(path))
+            {
+                AssetDatabase.CreateFolder(resourcesPath, "Configs");
+            }
+
+            IOUtility.CreateDirectory(path);
+            if (main == null)
+            {
+                Debug.LogError("Main instance is null. Please ensure Main is initialized before creating config.");
+                return;
+            }
+
+            var data = main.configInit.data;
+            if (data.listSoundSo == null)
+            {
+                AssetDatabase.CreateAsset(listSoundSo, $"{path}/ListSoundSO.asset");
+                data.listSoundSo = listSoundSo;
+            }
+
+            if (PrefabUtility.IsPartOfPrefabInstance(main))
+            {
+                PrefabUtility.RecordPrefabInstancePropertyModifications(main);
+            }
+            EditorUtility.SetDirty(this);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+    }
+    
+}
+#endif
